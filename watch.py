@@ -27,8 +27,8 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page(locale="da-DK")
     page.on("response", on_response)
-    page.goto(URL, wait_until="networkidle", timeout=60000)
-    page.wait_for_timeout(5000)
+    page.goto(URL, wait_until="domcontentloaded", timeout=60000)
+    page.wait_for_timeout(15000)
     browser.close()
 
 blob = "\n".join(bodies)
