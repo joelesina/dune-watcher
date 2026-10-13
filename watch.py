@@ -41,7 +41,8 @@ print("Dates seen:", dates)
 print("Found 16 Dec:", found, "| Fisketorvet mentioned:", fisketorvet)
 
 if found:
-    extra = "Fisketorvet mentioned." if fisketorvet else "Fisketorvet not confirmed, check."
-    notify("DUNE 3 TICKETS LIVE", f"A showing on 16 Dec has appeared. {extra}", "urgent")
+    i = blob.index(DATE)
+    snippet = blob[max(0, i - 200): i + 200].replace("\n", " ")
+    notify("Dune watcher: 16 Dec match", f"Context: {snippet}")
 elif TEST:
     notify("Dune watcher test", f"Working. JSON responses: {len(bodies)}. Dates seen: {dates[:8]}. 16 Dec: not yet.")
