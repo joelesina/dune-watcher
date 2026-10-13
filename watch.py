@@ -4,7 +4,6 @@ from playwright.sync_api import sync_playwright
 URL = "https://www.biografenvue.dk/movies/1000050581-dune-del-3-the-imax-experience/"
 TARGET = "2026-12-16"
 REFERENCE = "2026-12-15"
-IGNORE = {"firstShowtimeDate", "startDate", "endDate", "releaseDate", "lastShowtimeDate"}
 TOPIC = os.environ["NTFY_TOPIC"]
 TEST = os.environ.get("TEST_MODE") == "1"
 
@@ -50,16 +49,17 @@ with sync_playwright() as p:
 
 blob = "\n".join(bodies)
 
-def keys_for(date):
-    return sorted(set(re.findall(r'"(\w+)"\s*:\s*"' + date, blob)))
+def timed_hits(date):
+    pattern = r'"(\w+)"\s*:\s*"' + date + r'T(?!00:00)\d\d:\d\d[^"]*"'
+    return re.findall(pattern, blob)
 
-target_keys = [k for k in keys_for(TARGET) if k not in IGNORE]
-ref_keys = keys_for(REFERENCE)
+target_hits = timed_hits(TARGET)
+ref_hits = timed_hits(REFERENCE)
 
 print("Responses:", len(bodies), "| Fisketorvet selected:", chosen)
-print("16 Dec keys:", keys_for(TARGET), "| 15 Dec keys:", ref_keys)
+print("16 Dec timed hits:", target_hits, "| 15 Dec timed hits:", ref_hits)
 
-if target_keys:
-    notify("DUNE 3: 16 Dec showing?", f"Date found under {target_keys}. Fisketorvet selected: {chosen}. Check the page.", "urgent")
+if target_hits:
+    notify("DUNE 3: 16 Dec showing found", f"Timed entry under {sorted(set(target_hits))}. Fisketorvet selected: {chosen}. Check the page.", "urgent")
 elif TEST:
-    notify("Dune watcher test", f"Fisketorvet selected: {chosen}. 15 Dec seen under: {ref_keys}. 16 Dec (real keys): none yet.")
+    notify("Dune watcher test", f"Fisketorvet selected: {chosen}. Responses: {len(bodies)}. 15 Dec timed hits: {len(ref_hits)} {sorted(set(ref_hits))}. 16 Dec timed hits: 0.")
